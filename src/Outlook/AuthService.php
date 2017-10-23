@@ -1,4 +1,6 @@
 <?php
+namespace Outlook;
+
 /**
  * Outlook Auth Service
  * 
@@ -12,7 +14,7 @@
  * @licence	LGPL
  *
  */
-class OutlookAuthService
+class AuthService
 {
     private static $clientId = "";
     private static $clientSecret = "";

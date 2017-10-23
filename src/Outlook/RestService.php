@@ -1,4 +1,6 @@
 <?php
+namespace Outlook;
+
 /**
  * Outlook Auth Service
  * 
