@@ -3,29 +3,48 @@ namespace Outlook;
 
 /**
  * Outlook Auth Service
- * 
+ *
  * This class requires the web application to be configured with the Microsoft Apps.
  * So you can populate clientId, clientSecret and also the login and logout URI's
- * 
+ *
  * https://apps.dev.microsoft.com/#/appList
  *
- * @author	David Stevens <mail.davro@gmail.com>
- * @package    OutlookRestApi
- * @licence	LGPL
+ * @author   David Stevens <mail.davro@gmail.com>
+ * @package  OutlookRestApi
+ * @licence  LGPL
  *
  */
-class OutlookRestService
+class RestService
 {
     private static $outlookApiUrl = "https://outlook.office.com/api/v2.0";
-
-    public static function makeApiCall($access_token, $user_email, $method, $url, $payload = NULL) {
+    protected $auth;
+    
+    public function __construct($tokens)
+    {
+        $this->tokens = $tokens;
+    }
+    
+    /**
+     * Make an API Call to the REST Service
+     *
+     * Provider user's email to optimize routing of API call
+     *
+     * @param type $access_token
+     * @param type $userEmail
+     * @param type $method
+     * @param type $url
+     * @param type $payload
+     * @return type
+     */
+    public function makeApiCall($access_token, $userEmail, $method, $url, $payload = null)
+    {
         $headers = array(
-            "User-Agent: Outlook Rest API/1.0",        // Sending a User-Agent header is a best practice.
-            "Authorization: Bearer " . $access_token,  // Always need our auth token!
-            "Accept: application/json",                // Always accept JSON response.
-            "client-request-id: " . self::makeGuid(),  // Stamp each new request with a new GUID.
-            "return-client-request-id: true",          // Tell the server to include our request-id GUID in the response.
-            "X-AnchorMailbox: " . $user_email          // Provider user's email to optimize routing of API call
+            "User-Agent: Outlook Rest API/1.0",        // Best practice.
+            "Authorization: Bearer " . $access_token,  // Need auth token!
+            "Accept: application/json",                // Accept JSON response.
+            "client-request-id: " . self::makeGuid(),  // New request, new GUID.
+            "return-client-request-id: true",          // request-id GUID
+            "X-AnchorMailbox: " . $userEmail
         );
 
         $curl = curl_init($url);
@@ -47,11 +66,11 @@ class OutlookRestService
                 curl_setopt($curl, CURLOPT_POSTFIELDS, $payload);
                 break;
             case "DELETE":
-                error_log("Doing DELETE");
+//                error_log("Doing DELETE");
                 curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "DELETE");
                 break;
             default:
-                error_log("INVALID API METHOD: " . $method);
+//                error_log("INVALID API METHOD: " . $method);
                 exit;
         }
 
@@ -84,7 +103,8 @@ class OutlookRestService
     }
 
     // This function generates a random GUID.
-    public static function makeGuid() {
+    public static function makeGuid()
+    {
         if (function_exists('com_create_guid')) {
             return strtolower(trim(com_create_guid(), '{}'));
         } else {
@@ -100,7 +120,8 @@ class OutlookRestService
         }
     }
 
-    public static function getUser($access_token) {
+    public function getUser($access_token)
+    {
         $getUserParameters = array(
             // Only return the user's display name and email address
             "\$select" => "DisplayName,EmailAddress"
@@ -110,35 +131,41 @@ class OutlookRestService
         return self::makeApiCall($access_token, "", "GET", $getUserUrl);
     }
 
-    public static function getMessages($access_token, $user_email) {
+    public function getMessages(
+        $top = 15,
+        $select = "Subject,Body,ReceivedDateTime,From",
+        $orderBy = "ReceivedDateTime DESC"
+    ) {
+        
+        $user = $this->getUser($this->tokens['access_token'], 'https://workspace.local/login');
+
         $getParameters = array(
-            "\$select" => "Subject,Body,ReceivedDateTime,From",
-            "\$orderby" => "ReceivedDateTime DESC",
-            "\$top" => "15"
+            "\$top"     => $top,
+            "\$select"  => $select,
+            "\$orderby" => $orderBy
         );
         $getUrl = self::$outlookApiUrl . "/Me/MailFolders/Inbox/Messages?" . http_build_query($getParameters);
 
-        return self::makeApiCall($access_token, $user_email, "GET", $getUrl);
+        return $this->makeApiCall($this->tokens['access_token'], $user['email'], "GET", $getUrl);
     }
 
-    public static function getCalendar($access_token, $user_email) {
-
-        $getParameters = array(
-            "\$select" => "Subject,Organizer,Start,End"
-        );
-        $getUrl = self::$outlookApiUrl . "/Me/Events?" . http_build_query($getParameters);
-
-        return self::makeApiCall($access_token, $user_email, "GET", $getUrl);
-    }
-
-    public static function getContacts($access_token, $user_email) {
-        $getParameters = array(
-            "\$select" => "EmailAddresses,GivenName,Surname"
-        );
-        $getUrl = self::$outlookApiUrl . "/Me/Contacts?" . http_build_query($getParameters);
-
-        return self::makeApiCall($access_token, $user_email, "GET", $getUrl);
-    }
-
+//    public static function getCalendar($access_token, $user_email)
+//    {
+//        $getParameters = array(
+//            "\$select" => "Subject,Organizer,Start,End"
+//        );
+//        $getUrl = self::$outlookApiUrl . "/Me/Events?" . http_build_query($getParameters);
+//
+//        return self::makeApiCall($access_token, $user_email, "GET", $getUrl);
+//    }
+//
+//    public static function getContacts($access_token, $user_email)
+//    {
+//        $getParameters = array(
+//            "\$select" => "EmailAddresses,GivenName,Surname"
+//        );
+//        $getUrl = self::$outlookApiUrl . "/Me/Contacts?" . http_build_query($getParameters);
+//
+//        return self::makeApiCall($access_token, $user_email, "GET", $getUrl);
+//    }
 }
-

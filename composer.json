@@ -2,18 +2,18 @@
     "name": "Outlook Rest API",
     "description": "Outlook Resful API for OpenID and Application Scope",
     "keywords": [
-      "ddt",
-      "the",
-      "crick",
+      "outlook",
+      "rest",
+      "api",
       "development"
     ],
-    "homepage": "http://workspace.local",
+    "homepage": "http://davro.net",
     "config": {
         "bin-dir": "bin"
     },
     "autoload": {
         "psr-4": {
-            "Crick\\": "src/Crick/"
+            "Outlook\\": "src/Outlook/"
         }
     },
     "require-dev": {
