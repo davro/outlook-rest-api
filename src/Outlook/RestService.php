@@ -66,11 +66,9 @@ class RestService
                 curl_setopt($curl, CURLOPT_POSTFIELDS, $payload);
                 break;
             case "DELETE":
-//                error_log("Doing DELETE");
                 curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "DELETE");
                 break;
             default:
-//                error_log("INVALID API METHOD: " . $method);
                 exit;
         }
 
@@ -148,18 +146,33 @@ class RestService
 
         return $this->makeApiCall($this->tokens['access_token'], $user['email'], "GET", $getUrl);
     }
+    
+    public function getCalendar($select = "Subject,Organizer,Start,End")
+    {
+        $user = $this->getUser($this->tokens['access_token'], 'https://workspace.local/login');
 
-//    public static function getCalendar($access_token, $user_email)
-//    {
-//        $getParameters = array(
-//            "\$select" => "Subject,Organizer,Start,End"
-//        );
-//        $getUrl = self::$outlookApiUrl . "/Me/Events?" . http_build_query($getParameters);
-//
-//        return self::makeApiCall($access_token, $user_email, "GET", $getUrl);
-//    }
-//
-//    public static function getContacts($access_token, $user_email)
+        $getParameters = array(
+//            "startDateTime" => "2017-10-25T09:00:00.0000000",
+//            "endDateTime"   => "2017-10-25T11:00:00.0000000",
+            "\$select"      => $select,
+        );
+        $getUrl = self::$outlookApiUrl . "/Me/Events?" . http_build_query($getParameters);
+
+        return self::makeApiCall($this->tokens['access_token'], $user['email'], "GET", $getUrl);
+    }
+    
+    public function createCalendarEntry($payload)
+    {
+        $user = $this->getUser($this->tokens['access_token'], 'https://workspace.local/login');
+        
+        $getUrl = self::$outlookApiUrl . "/Me/Events";
+
+        return self::makeApiCall($this->tokens['access_token'], $user['email'], "POST", $getUrl, $payload);
+    }
+
+    
+    
+//    public function getContacts($access_token, $user_email)
 //    {
 //        $getParameters = array(
 //            "\$select" => "EmailAddresses,GivenName,Surname"

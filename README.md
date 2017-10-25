@@ -8,22 +8,15 @@ $redirectUri = 'https://workspace.local/login';
 $hrefPath = CrickAuthService::getLoginUrl($redirectUri);
 ```
 
-
 Scope for Mail
 ```php
-$data = CrickOutlookService::getMessages(
-    CrickAuthService::getAccessToken('https://workspace.local/login', $app), 
-    $app['session']->get('user')['email']
-);
+$restService = new RestService($tokens);
+$messages = $restService->getMessages(1);
 ```
-
 
 Scope for Calander 
 ```php
-$data = CrickOutlookService::getContacts(
-    CrickAuthService::getAccessToken('https://workspace.local/login', 
-    $app), $app['session']->get('user')['email']
-);
+$restService = new RestService($tokens);        
+$events = $restService->getCalendar();
 ```
-
 
